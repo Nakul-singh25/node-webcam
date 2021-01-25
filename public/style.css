@@ -1,0 +1,20 @@
+.title {
+	text-align: center;
+}
+.image {
+	display: block;
+	width: 88vw;
+	margin: 0px auto;
+}
+
+@media (min-width: 800px) {
+	.image {
+		width: 70vw;
+	}
+}
+
+@media (min-width: 1000px) {
+	.image {
+		width: 50vw;
+	}
+}
