@@ -6,10 +6,25 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
-	<h1 class="title">Live stream</h1>
+	<nav class="nav">
+		<ul class="nav-items flex">
+			<li class="nav-item">
+				<a class="nav-link" href="index.html">Livestream</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="download.html">Download</a>
+			</li>
+		</ul>
+	</nav>
+	
+	<h1 class="title">Livestream</h1>
 	<img class="image" src="" alt="">
+	<div class="button-container flex">
+		<button class="button live">Stop livestream</button>
+		<button class="button record">Start recording</button>
+		<button class="button video">Start video synthesis</button>
+	</div>
 	<script src="/socket.io/socket.io.js"></script> 
-	<script type="text/javascript" src="pako.min.js"></script>
 	<script type="text/javascript" src="script.js" ></script>
 </body>
 </html>
