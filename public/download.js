@@ -24,10 +24,15 @@ const createLinkContainer = (url, videoName) => {
     const deleteButtonText = document.createTextNode("Delete");
     deleteButton.appendChild(deleteButtonText);
 
+    const div = document.createElement('div');
+    div.classList.add('button_container');
+    div.classList.add('flex');
+
     li.appendChild(text);
     downloadButton.appendChild(downloadAnchor);
-    li.appendChild(downloadButton);
-    li.appendChild(deleteButton);
+    div.appendChild(downloadButton);
+    div.appendChild(deleteButton);
+    li.appendChild(div);
 
     return li;
 };
@@ -42,6 +47,7 @@ window.addEventListener('load', async (e) => {
             const body = document.querySelector('body');
             const ol = document.querySelector('ol');
             const h2 = document.createElement('h2');
+            h2.classList.add('error');
             h2.innerText = json.error;
             body.insertBefore(h2, ol);
         } else {
@@ -53,7 +59,7 @@ window.addEventListener('load', async (e) => {
             const deleteButton = document.getElementsByClassName('delete');
             for(let i = 0; i < deleteButton.length; i++) {
                 deleteButton[i].addEventListener('click', async(e) => {
-                    const parentElement = e.path[1];
+                    const parentElement = e.path[2];
                     const fileName = parentElement.firstChild.innerText;
                     try {
                         const res = await fetch(`${url}/delete/${fileName}`, {

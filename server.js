@@ -12,6 +12,7 @@ const FPS = 12;
 let counter = 0;
 let recordState = false;
 let liveState = true; 
+let cameraState = false;
 let dirName;
 
 const mkDir = name => {
@@ -44,7 +45,8 @@ app.use(express.json());
 app.get('/state', (req, res) => {
 	let state1 = liveState === true? 1 : 0;
 	let state2 = recordState === true? 1 : 0;
-	res.json({'live' : state1, 'rec' : state2});
+	let state3 = cameraState === true? 1 : 0;
+	res.json({'live' : state1, 'rec' : state2, 'cam' : state3 });
 });
 
 app.post('/live', (req, res) => {
@@ -56,7 +58,7 @@ app.post('/live', (req, res) => {
 	} else if (data == 0) {
 		liveState = false;
 		counter = 0;
-		console.log('Recording stopped!');
+		console.log('Livestream stopped!');
 		res.json({'res' : 'Livestream stopped!', 'buttonData': 'Start livestream'});
 	} else {
 		res.json({'error' : 'Wrong data!'});
@@ -112,7 +114,6 @@ app.get('/vid', (req, res) => {
 				});
 		});
 	} catch(err) {
-		videoLed.writeSync(0);
 		console.log('First record the video!');
 		res.json({'error' : 'First record the video!'});
 	}
@@ -139,12 +140,14 @@ app.get('/download/:file(*)', (req, res) => {
 
 app.delete('/delete/:file(*)', (req, res) => {
 	let file = req.params.file;
+	console.log(file, ' deleted!');
 	let fileLocation = path.join(__dirname, 'video', file);
 	try {
 		fs.unlinkSync(fileLocation);
 		res.json({'res' : `${file} deleted!`});
 	} catch (err) {
 		res.json({'error' : err});
+		console.log(err);
 	}
 })
 
@@ -152,38 +155,49 @@ try {
 	const vCap = new cv.VideoCapture(0);
 	vCap.set(cv.CAP_PROP_BUFFERSIZE, 1);
 
-	setInterval(() => {
-		const frame = vCap.read();
-		const flippedFrame = frame.flip(1);
-		const resizedFrame = flippedFrame.resize(frame.rows/5, frame.cols/5);
-		const grayFrame = resizedFrame.cvtColor(cv.COLOR_BGR2GRAY);
-		const image = cv.imencode('.jpg', flippedFrame);
-		const resizedImage = cv.imencode('.jpg', grayFrame);
-		// const resizedImage = cv.imencode('.jpg', resizedFrame);
-		const base64str = image.toString('base64');
-	
-		if(recordState === true) {
-			mkDir('images');
-			if(counter < 1) {
-				const now = Date.now();
-				dirName = `Img${now}`;
-				mkDir('images/' + dirName);
+	cameraState = true;
+
+	const interval = setInterval(() => {
+		try {
+			const frame = vCap.read();
+			const flippedFrame = frame.flip(1);
+			const resizedFrame = flippedFrame.resize(frame.rows/5, frame.cols/5);
+			const grayFrame = resizedFrame.cvtColor(cv.COLOR_BGR2GRAY);
+			const image = cv.imencode('.jpg', flippedFrame);
+			const resizedImage = cv.imencode('.jpg', grayFrame);
+			// const resizedImage = cv.imencode('.jpg', resizedFrame);
+			const base64str = image.toString('base64');
+
+			if(recordState === true) {
+				mkDir('images');
+				if(counter < 1) {
+					const now = Date.now();
+					dirName = `Img${now}`;
+					mkDir('images/' + dirName);
+				}
+				const fileName = 'img' + counter.toString() + '.jpg';
+				const filePath = path.join(__dirname, 'images', dirName, fileName);
+				if(fs.existsSync(path.join(__dirname, 'images', dirName))) {
+					try {
+						fs.writeFileSync(filePath, base64str, 'base64');
+					} catch(err) {
+						console.log(err);
+					}
+				}
+				counter += 1;
 			}
-			const fileName = 'img' + counter.toString() + '.jpg';
-			const filePath = path.join(__dirname, 'images', dirName, fileName);
-			try {
-				fs.writeFileSync(filePath, base64str, 'base64');
-			} catch(err) {
-				console.log(err);
-			}
-			   counter += 1;
-		}
-		if (liveState === true) {
+			if (liveState === true) {
 			io.emit('buffer', resizedImage);
+			}
+		} catch(err) {
+			cameraState = false;
+			console.log("Camera is plugged out!");
+			clearInterval(interval);
 		}
 	}, 1000 / FPS);
 } catch(err) {
-	console.log(err);
+	console.log("Please plug in the camera!");
+	cameraState = false;
 }
 
 server.listen(3000, () => {

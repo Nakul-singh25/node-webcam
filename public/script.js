@@ -1,9 +1,12 @@
 const hostname = window.location.hostname;
 const url = 'http://' + hostname + ':3000';
+
 const socket = io.connect(url);
+
 const live = document.querySelector('.live');
 const record = document.querySelector('.record');
 const video = document.querySelector('.video');
+const error = document.querySelector('.error');
 
 let recording = false;
 let livestream = true;
@@ -13,7 +16,7 @@ const uint8ToBase64 = buffer => {
 	let n = new Uint8Array(buffer);
 	let r = n.byteLength;
 	for(let i = 0;i < r;i++){
-        	t += String.fromCharCode(n[i])
+        	t += String.fromCharCode(n[i]);
 	}
 	return window.btoa(t);
 };
@@ -23,6 +26,7 @@ window.addEventListener('load', async(e) => {
 	const data = await res.json();
 	const recState = data.rec;
 	const liveState = data.live;
+	const cameraState = data.cam;
 	if(recState == 1) {
 		recording = true;
 		record.innerText = 'Stop recording';
@@ -30,6 +34,9 @@ window.addEventListener('load', async(e) => {
 	if(liveState == 0) {
 		livestream = false;
 		live.innerText = 'Start livestream';
+	}
+	if(cameraState == 0) {
+		error.innerText = 'Please plug in the camera!';
 	}
 });
 
@@ -85,8 +92,10 @@ video.addEventListener('click', async(e) => {
 	video.innerText = "Start video synthesis";
 });
 
-socket.on('buffer', data => {
-	const image = document.querySelector('.image');
-	const img = uint8ToBase64(data);
-	image.src = `data:image/jpeg;base64,${img}`;
-});
+if(livestream) {
+	socket.on('buffer', data => {
+		const image = document.querySelector('.image');
+		const img = uint8ToBase64(data);
+		image.src = `data:image/jpeg;base64,${img}`;
+	});
+}

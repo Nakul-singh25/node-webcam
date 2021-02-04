@@ -21,11 +21,6 @@ button {
 	cursor: pointer;
 }
 
-button:hover {
-	color: black;
-	background-color: white;
-}
-
 .flex {
 	display: flex;
 }
@@ -60,6 +55,12 @@ button:hover {
 	margin: 18px 0px;
 }
 
+.error {
+	text-align: center;
+	color: red;
+	margin: 2rem, 0px;
+}
+
 .image {
 	display: block;
 	width: 88vw;
@@ -74,15 +75,17 @@ button:hover {
 }
 
 .container {
+	width: 100vw;
 	flex-direction: column;
 	align-content: center;
 	justify-content: center;
 }
 
 .link_container {
+	flex-direction: column;
 	justify-content: center;
 	align-items: center;
-
+	margin-bottom: 30px;
 }
 
 .delete {
@@ -91,13 +94,8 @@ button:hover {
 	border: 2px solid red;
 }
 
-.delete:hover {
-	color: red;
-}
 
 .download {
-	margin-left: 70px;
-	margin-right: 20px;
 	padding: 0px;
 }
 
@@ -108,12 +106,6 @@ button:hover {
 	padding: 10px;
 }
 
-.download:hover {
-	color: black;
-}
-.file_name {
-	margin-left: 40px;
-}
 
 @media (min-width: 800px) {
 	.image {
