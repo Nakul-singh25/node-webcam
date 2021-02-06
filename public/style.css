@@ -19,6 +19,7 @@ button {
 	margin: 10px 20px;
 	border: 2px solid black;
 	cursor: pointer;
+	width: 168px;
 }
 
 .flex {
@@ -53,6 +54,10 @@ button {
 	text-align: center;
 	font-size: 3rem;
 	margin: 18px 0px;
+}
+
+.errors {
+	margin: 20px 0px;
 }
 
 .error {
@@ -92,11 +97,13 @@ button {
 	color: white;
 	background-color: red;
 	border: 2px solid red;
+	width: 130px;
 }
 
 
 .download {
 	padding: 0px;
+	width: 130px;
 }
 
 .download a {

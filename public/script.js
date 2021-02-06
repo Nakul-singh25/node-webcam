@@ -6,10 +6,20 @@ const socket = io.connect(url);
 const live = document.querySelector('.live');
 const record = document.querySelector('.record');
 const video = document.querySelector('.video');
-const error = document.querySelector('.error');
-
 let recording = false;
 let livestream = true;
+
+const addError = text => {
+	const errorContainer = document.querySelector('.errors');
+	const error = document.createElement('h3');
+	error.classList.add('error');
+	error.innerText = text;
+	errorContainer.appendChild(error);
+	const interval = setInterval(() => {
+		errorContainer.removeChild(error);
+		clearInterval(interval);
+	}, 1000);
+};
 
 const uint8ToBase64 = buffer => {
 	let t = "";
@@ -36,7 +46,7 @@ window.addEventListener('load', async(e) => {
 		live.innerText = 'Start livestream';
 	}
 	if(cameraState == 0) {
-		error.innerText = 'Please plug in the camera!';
+		addError('Please plug in the camera and restart the pi !');
 	}
 });
 
@@ -54,6 +64,8 @@ live.addEventListener('click', async(e) => {
 	const data = await res.json();
 	if(data.error) {
 		livestream = !livestream;
+		console.log(data.error);
+		addError(data.error);
 	} else {
 		live.innerText = data.buttonData;
 	}
@@ -73,6 +85,8 @@ record.addEventListener('click', async(e) => {
 	const data = await res.json();
 	if(data.error) {
 		recording = !recording;
+		console.log(data.error);
+		addError(data.error);
 	} else {
 		record.innerText = data.buttonData;
 	}
@@ -83,11 +97,12 @@ video.addEventListener('click', async(e) => {
 	video.innerText = 'Making videos...'
 	const res = await fetch(`${url}/vid`);
 	const data = await res.json();
-	// if(data.error) {
-	// 	console.log(data.error);
-	// } else {
-	// 	console.log(data.res);
-	// }
+	if(data.error) {
+		console.log(data.error);
+		addError(data.error);
+	} else {
+		console.log(data.res);
+	}
 	video.disable = false;
 	video.innerText = "Start video synthesis";
 });

@@ -67,55 +67,64 @@ app.post('/live', (req, res) => {
 
 app.post('/rec', (req, res) => {
 	let data = req.body.data;
-	if (data == 1) {
-		recordState = true;
-		console.log('Recording started...');
-		res.json({'res' : 'Recording started', 'buttonData': 'Stop recording'});
-	} else if (data == 0) {
-		recordState = false;
-		counter = 0;
-		console.log('Recording stopped!');
-		res.json({'res' : 'Recording stopped!', 'buttonData': 'Start recording'});
+	if(cameraState === true) {
+		if (data == 1) {
+			recordState = true;
+			console.log('Recording started...');
+			res.json({'res' : 'Recording started', 'buttonData': 'Stop recording'});
+		} else if (data == 0) {
+			recordState = false;
+			counter = 0;
+			console.log('Recording stopped!');
+			res.json({'res' : 'Recording stopped!', 'buttonData': 'Start recording'});
+		} else {
+			res.json({'error' : 'Wrong data!'});
+		}
 	} else {
-		res.json({'error' : 'Wrong data!'});
-	}
+		res.json({ 'error': 'Camera is not present!' });
+	}	
 });
 
 app.get('/vid', (req, res) => {
-	try {
-		const dirs = fs.readdirSync(path.join(__dirname, 'images'));
-		console.log('Started making video...');
-		mkDir("video");
-		const numDirs = dirs.length;
-		let counter = 0;
-		dirs.forEach(file => {
-			let command = ffmpeg()
-					.input('images/' + file  + '/img%d.jpg')
-					.inputFPS(FPS - 1)
-					.output('video/' + file  + '.mp4')
-					.noAudio();
-			command = promisifyCommand(command);
-			console.log(file + ' started!');
-			command()
-				.then(() => {
-					counter += 1;
-					console.log(file + ' completed!');
-					if (counter == numDirs) {
-						fs.rmdirSync(path.join(__dirname, 'images'), { recursive: true });
-						console.log('All videos Completeed!');
-						console.log('images dir deleted!');
-						res.json({'res' : 'vid synthesis completed completed!'});
-					}
-				})
-				.catch(error => {
-					counter += 1;
-					console.log(error);
-					res.json({ error });
-				});
-		});
-	} catch(err) {
-		console.log('First record the video!');
-		res.json({'error' : 'First record the video!'});
+	if (recordState === false) {
+		try {
+			const dirs = fs.readdirSync(path.join(__dirname, 'images'));
+			console.log('Started making video...');
+			mkDir("video");
+			const numDirs = dirs.length;
+			let counter = 0;
+			dirs.forEach(file => {
+				let command = ffmpeg()
+						.input('images/' + file  + '/img%d.jpg')
+						.inputFPS(FPS - 1)
+						.output('video/' + file  + '.mp4')
+						.noAudio();
+				command = promisifyCommand(command);
+				console.log(file + ' started!');
+				command()
+					.then(() => {
+						counter += 1;
+						console.log(file + ' completed!');
+						if (counter == numDirs) {
+							fs.rmdirSync(path.join(__dirname, 'images'), { recursive: true });
+							console.log('All videos Completeed!');
+							console.log('images dir deleted!');
+							res.json({'res' : 'vid synthesis completed!'});
+						}
+					})
+					.catch(error => {
+						counter += 1;
+						console.log(error);
+						res.json({ error });
+					});
+			});
+		} catch(err) {
+			console.log('First record the video!');
+			res.json({'error' : 'First record the video!'});
+		}
+	} else {
+		console.log('Recording is going on!');
+		res.json({ 'error': 'Recording is going on!' });
 	}
 });
 
